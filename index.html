@@ -1,0 +1,152 @@
+<script type="text/javascript">
+        var gk_isXlsx = false;
+        var gk_xlsxFileLookup = {};
+        var gk_fileData = {};
+        function filledCell(cell) {
+          return cell !== '' && cell != null;
+        }
+        function loadFileData(filename) {
+        if (gk_isXlsx && gk_xlsxFileLookup[filename]) {
+            try {
+                var workbook = XLSX.read(gk_fileData[filename], { type: 'base64' });
+                var firstSheetName = workbook.SheetNames[0];
+                var worksheet = workbook.Sheets[firstSheetName];
+
+                // Convert sheet to JSON to filter blank rows
+                var jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1, blankrows: false, defval: '' });
+                // Filter out blank rows (rows where all cells are empty, null, or undefined)
+                var filteredData = jsonData.filter(row => row.some(filledCell));
+
+                // Heuristic to find the header row by ignoring rows with fewer filled cells than the next row
+                var headerRowIndex = filteredData.findIndex((row, index) =>
+                  row.filter(filledCell).length >= filteredData[index + 1]?.filter(filledCell).length
+                );
+                // Fallback
+                if (headerRowIndex === -1 || headerRowIndex > 25) {
+                  headerRowIndex = 0;
+                }
+
+                // Convert filtered JSON back to CSV
+                var csv = XLSX.utils.aoa_to_sheet(filteredData.slice(headerRowIndex)); // Create a new sheet from filtered array of arrays
+                csv = XLSX.utils.sheet_to_csv(csv, { header: 1 });
+                return csv;
+            } catch (e) {
+                console.error(e);
+                return "";
+            }
+        }
+        return gk_fileData[filename] || "";
+        }
+        </script><!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>legenda</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: #000;
+            color: #fff;
+            font-family: 'Arial', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 600px;
+            padding: 20px;
+            text-align: center;
+            animation: fadeIn 1s ease-in-out;
+        }
+
+        h1 {
+            font-size: 2.5em;
+            margin-bottom: 20px;
+            animation: slideIn 0.8s ease-out;
+        }
+
+        .info {
+            margin: 20px 0;
+            font-size: 1.2em;
+            line-height: 1.6;
+            animation: slideIn 1s ease-out 0.2s;
+            animation-fill-mode: backwards;
+        }
+
+        .telegram-btn {
+            display: inline-flex;
+            align-items: center;
+            padding: 12px 24px;
+            background-color: #1c2526;
+            color: #fff;
+            text-decoration: none;
+            font-size: 1.1em;
+            border-radius: 50px;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            margin-top: 20px;
+            animation: slideIn 1.2s ease-out 0.4s;
+            animation-fill-mode: backwards;
+        }
+
+        .telegram-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 4px 15px rgba(255, 255, 255, 0.2);
+        }
+
+        .telegram-btn:active {
+            transform: translateY(1px);
+            box-shadow: none;
+        }
+
+        .telegram-icon {
+            width: 32px;
+            height: 32px;
+            margin-right: 10px;
+            vertical-align: middle;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes slideIn {
+            from { transform: translateY(20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        @media (max-width: 480px) {
+            h1 { font-size: 2em; }
+            .info { font-size: 1em; }
+            .telegram-btn { font-size: 1em; padding: 10px 20px; }
+            .telegram-icon { width: 28px; height: 28px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>My bio</h1>
+        <div class="info">
+            <p><strong>Name:</strong> Fedor</p>
+            <p><strong>Country:</strong> Russia</p>
+            <p><strong>About me:</strong> сап двач, я тян ламповая няша, люблю дота реп</p>
+        </div>
+        <a href="https://t.me/blevotron" class="telegram-btn">
+            <svg class="telegram-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="12" cy="12" r="12" fill="#fff"/>
+                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 15.49c-.26.77-.91.97-1.38.4l-3.33-2.48-1.6 1.46c-.18.16-.37.2-.56.13l.24-3.43 6.18-5.59c.26-.23.12-.56-.26-.38l-7.71 4.85-3.33-1.05c-.76-.24-.77-.77.16-1.14l13.33-5.12c.62-.24 1.2.13 1.01.77l-2.01 11.88z" fill="#000"/>
+            </svg>
+            Telegram
+        </a>
+    </div>
+</body>
+</html>
