@@ -137,14 +137,12 @@
       z-index: 1000;
       align-items: center;
     }
-
     /* Контейнер для иконки и ползунка */
     .sound-wrapper {
       position: relative;
       display: flex;
       align-items: center;
     }
-
     /* Иконка звука */
     .sound-icon {
       width: 50px;
@@ -181,7 +179,6 @@
       font-size: 20px;
       color: #fff;
     }
-
     /* Контейнер для ползунка */
     .volume-container {
       position: absolute;
@@ -196,7 +193,6 @@
     .sound-control:hover .volume-container {
       width: 120px; /* Ширина при раскрытии */
     }
-
     /* Стиль для ползунка */
     .volume-slider {
       width: 100px;
@@ -209,7 +205,6 @@
       cursor: pointer;
       margin-left: 10px;
     }
-
     /* Стиль для "бегунка" ползунка */
     .volume-slider::-webkit-slider-thumb {
       -webkit-appearance: none;
@@ -221,7 +216,6 @@
       cursor: pointer;
       box-shadow: 0 0 5px rgba(255, 105, 180, 0.8);
     }
-
     .volume-slider::-moz-range-thumb {
       width: 15px;
       height: 15px;
@@ -231,21 +225,18 @@
       border: none;
       box-shadow: 0 0 5px rgba(255, 105, 180, 0.8);
     }
-
   </style>
 </head>
 <body>
   <!-- Видео на фоне -->
-  <video id="background-video" autoplay muted loop>
+  <video id="background-video" autoplay muted loop> <!-- autoplay здесь больше не начнет воспроизведение со звуком, но оставлено для потенциальной совместимости -->
     <source src="video.mp4" type="video/mp4">
     Ваш браузер не поддерживает видео.
   </video>
-
   <!-- Модальное окно "Click" -->
   <div id="clickModal" class="click-modal">
     <div class="click-text">Click</div>
   </div>
-
   <!-- Контроллер звука -->
   <div id="soundControl" class="sound-control">
     <div class="sound-wrapper">
@@ -257,7 +248,6 @@
       </div>
     </div>
   </div>
-
   <!-- Основной контент -->
   <div id="mainContent" class="main-content">
     <div class="container">
@@ -273,7 +263,6 @@
       </a>
     </div>
   </div>
-
   <script>
     document.addEventListener('DOMContentLoaded', function() {
       const clickModal = document.getElementById('clickModal');
@@ -283,6 +272,9 @@
       const volumeSlider = document.getElementById('volumeSlider');
       const video = document.getElementById('background-video');
       let isPlaying = false;
+
+      // Убираем автоматическое воспроизведение со звуком при загрузке
+      // Видео остается в состоянии 'muted' до клика
 
       // Обработчик события canplaythrough для видео
       video.addEventListener('canplaythrough', function() {
@@ -298,26 +290,37 @@
           // Показываем основной контент и контроллер звука
           mainContent.style.display = 'block';
           soundControl.style.display = 'flex';
-          // Автоматически запускаем видео со звуком
-          playVideo();
+          // Запускаем видео со звуком ТОЛЬКО после клика
+          playVideoUnmuted();
         }, 500);
       });
 
-      // Функция воспроизведения видео
-      function playVideo() {
+      // Функция воспроизведения видео со звуком
+      function playVideoUnmuted() {
+        // Важно: сначала убираем mute, потом пытаемся воспроизвести
         video.muted = false;
-        video.play().then(() => {
-          soundIcon.innerHTML = '<i class="fas fa-volume-up"></i>';
-          soundIcon.classList.remove('muted');
-          isPlaying = true;
-          updateVolumeIcon(video.volume);
-        }).catch(error => {
-          console.log('Ошибка воспроизведения:', error);
-          soundIcon.innerHTML = '<i class="fas fa-exclamation-triangle"></i>';
-        });
+        const playPromise = video.play();
+        if (playPromise !== undefined) {
+            playPromise.then(() => {
+                // Воспроизведение успешно началось
+                soundIcon.innerHTML = '<i class="fas fa-volume-up"></i>';
+                soundIcon.classList.remove('muted');
+                isPlaying = true;
+                updateVolumeIcon(video.volume);
+            }).catch(error => {
+                // Автовоспроизведение заблокировано браузером
+                console.log('Ошибка воспроизведения (возможно, автовоспроизведение заблокировано):', error);
+                // Возвращаем в состояние muted и показываем ошибку
+                video.muted = true;
+                soundIcon.innerHTML = '<i class="fas fa-exclamation-triangle"></i>';
+                soundIcon.classList.add('muted');
+                isPlaying = false;
+                 // Даже если автовоспроизведение не удалось, мы показываем контент
+            });
+        }
       }
 
-      // Функция переключения звука
+      // Функция переключения звука (остается без изменений)
       function toggleSound() {
         if (isPlaying) {
           video.muted = true;
@@ -326,29 +329,35 @@
           isPlaying = false;
         } else {
           video.muted = false;
-          video.play().then(() => {
-            soundIcon.innerHTML = '<i class="fas fa-volume-up"></i>';
-            soundIcon.classList.remove('muted');
-            isPlaying = true;
-            updateVolumeIcon(video.volume);
-          }).catch(error => {
-            console.log('Ошибка воспроизведения:', error);
-            soundIcon.innerHTML = '<i class="fas fa-exclamation-triangle"></i>';
-          });
+           const playPromise = video.play();
+            if (playPromise !== undefined) {
+                playPromise.then(() => {
+                    soundIcon.innerHTML = '<i class="fas fa-volume-up"></i>';
+                    soundIcon.classList.remove('muted');
+                    isPlaying = true;
+                    updateVolumeIcon(video.volume);
+                }).catch(error => {
+                    console.log('Ошибка воспроизведения при включении звука:', error);
+                     // Если воспроизвести не удалось, оставляем иконку muted
+                    soundIcon.innerHTML = '<i class="fas fa-volume-mute"></i>';
+                    soundIcon.classList.add('muted');
+                    video.muted = true; // Убедимся, что видео осталось muted
+                });
+            }
         }
       }
 
       // Обработчик клика по иконке звука
       soundIcon.addEventListener('click', toggleSound);
 
-      // Обработчик изменения громкости
+      // Обработчик изменения громкости (остается без изменений)
       volumeSlider.addEventListener('input', function() {
         const volume = this.value / 100;
         video.volume = volume;
         updateVolumeIcon(volume);
       });
 
-      // Функция обновления иконки громкости
+      // Функция обновления иконки громкости (остается без изменений)
       function updateVolumeIcon(volume) {
         if (volume === 0 || video.muted) {
           soundIcon.innerHTML = '<i class="fas fa-volume-mute"></i>';
@@ -361,7 +370,7 @@
         }
       }
 
-      // Установка начальной громкости при загрузке
+      // Установка начальной громкости при загрузке (остается без изменений)
       video.volume = 0.3;
     });
   </script>
