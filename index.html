@@ -78,11 +78,11 @@
     }
     .container {
       padding: 40px;
-      background: rgba(17, 17, 17, 0.85);
+      background: rgba(17, 17, 17, 0.85); /* Полупрозрачный фон */
       border-radius: 20px;
       box-shadow: 0 0 30px rgba(255, 105, 180, 0.2);
       animation: fadeIn 1.2s ease-in-out;
-      backdrop-filter: blur(5px);
+      backdrop-filter: blur(5px); /* Эффект размытия фона */
     }
     @keyframes fadeIn {
       from { opacity: 0; transform: translateY(20px); }
@@ -128,23 +128,20 @@
     .icon {
       margin-right: 10px;
     }
-    /* Контроллер звука */
+    /* Стиль для видео элемента (скрыт, кроме фонового) */
+    video {
+       /* display: none; */ /* Убрано, так как видео теперь фоновое */
+    }
+    /* Контейнер для иконки звука и ползунка */
     .sound-control {
       position: fixed;
       top: 20px;
       left: 20px;
       display: none;
       z-index: 1000;
-      align-items: center;
-    }
-
-    /* Контейнер для иконки и ползунка */
-    .sound-wrapper {
-      position: relative;
       display: flex;
       align-items: center;
     }
-
     /* Иконка звука */
     .sound-icon {
       width: 50px;
@@ -158,7 +155,6 @@
       transition: all 0.3s ease;
       box-shadow: 0 0 15px rgba(255, 105, 180, 0.3);
       flex-shrink: 0;
-      z-index: 2; /* Чтобы иконка была поверх ползунка */
     }
     .sound-icon:hover {
       transform: scale(1.1);
@@ -168,7 +164,6 @@
     .sound-icon:active {
       transform: scale(0.95);
     }
-    /* Стили для состояния "звук выключен" */
     .sound-icon.muted {
       background: #ff4444;
       box-shadow: 0 0 15px rgba(255, 68, 68, 0.3);
@@ -181,37 +176,32 @@
       font-size: 20px;
       color: #fff;
     }
-
-    /* Контейнер для ползунка */
-    .volume-container {
-      position: absolute;
-      left: 50px; /* Начинается сразу после иконки */
-      width: 0;
-      height: 50px; /* Высота равна высоте иконки */
-      display: flex;
-      align-items: center;
-      overflow: hidden;
-      transition: width 0.3s ease;
-    }
-    .sound-control:hover .volume-container {
-      width: 120px; /* Ширина при раскрытии */
-    }
-
-    /* Стиль для ползунка */
+    /* Ползунок громкости */
     .volume-slider {
-      width: 100px;
+      width: 0;
       height: 5px;
       background: #333;
       border-radius: 3px;
+      overflow: hidden;
+      transition: width 0.3s ease, opacity 0.3s ease;
+      opacity: 0;
+      margin-left: 10px;
+      position: relative;
+    }
+    .sound-control:hover .volume-slider {
+      width: 100px;
+      opacity: 1;
+    }
+    .volume-slider input {
+      width: 100%;
+      height: 100%;
+      background: transparent;
       outline: none;
+      cursor: pointer;
       -webkit-appearance: none;
       appearance: none;
-      cursor: pointer;
-      margin-left: 10px;
     }
-
-    /* Стиль для "бегунка" ползунка */
-    .volume-slider::-webkit-slider-thumb {
+    .volume-slider input::-webkit-slider-thumb {
       -webkit-appearance: none;
       appearance: none;
       width: 15px;
@@ -221,8 +211,7 @@
       cursor: pointer;
       box-shadow: 0 0 5px rgba(255, 105, 180, 0.8);
     }
-
-    .volume-slider::-moz-range-thumb {
+    .volume-slider input::-moz-range-thumb {
       width: 15px;
       height: 15px;
       border-radius: 50%;
@@ -231,7 +220,17 @@
       border: none;
       box-shadow: 0 0 5px rgba(255, 105, 180, 0.8);
     }
-
+    /* Прогресс громкости */
+    .volume-progress {
+      position: absolute;
+      top: 0;
+      left: 0;
+      height: 100%;
+      background: #ff69b4;
+      width: 30%; /* 30% от 100px = 30px */
+      border-radius: 3px;
+      pointer-events: none;
+    }
   </style>
 </head>
 <body>
@@ -245,19 +244,16 @@
   <div id="clickModal" class="click-modal">
     <div class="click-text">Click</div>
   </div>
-
-  <!-- Контроллер звука -->
+  <!-- Контроль звука -->
   <div id="soundControl" class="sound-control">
-    <div class="sound-wrapper">
-      <div id="soundIcon" class="sound-icon">
-        <i class="fas fa-volume-up"></i>
-      </div>
-      <div class="volume-container">
-        <input type="range" id="volumeSlider" class="volume-slider" min="0" max="100" value="30">
-      </div>
+    <div id="soundIcon" class="sound-icon">
+      <i class="fas fa-volume-up"></i>
+    </div>
+    <div class="volume-slider">
+      <div class="volume-progress" id="volumeProgress"></div>
+      <input type="range" id="volumeSlider" min="0" max="100" value="30">
     </div>
   </div>
-
   <!-- Основной контент -->
   <div id="mainContent" class="main-content">
     <div class="container">
@@ -273,7 +269,6 @@
       </a>
     </div>
   </div>
-
   <script>
     document.addEventListener('DOMContentLoaded', function() {
       const clickModal = document.getElementById('clickModal');
@@ -281,12 +276,13 @@
       const soundControl = document.getElementById('soundControl');
       const soundIcon = document.getElementById('soundIcon');
       const volumeSlider = document.getElementById('volumeSlider');
-      const video = document.getElementById('background-video');
+      const volumeProgress = document.getElementById('volumeProgress');
+      const video = document.getElementById('background-video'); // Изменено с audio на video
       let isPlaying = false;
 
       // Обработчик события canplaythrough для видео
       video.addEventListener('canplaythrough', function() {
-        document.body.classList.add('video-loaded');
+         document.body.classList.add('video-loaded');
       });
 
       // Обработчик клика по модальному окну
@@ -295,62 +291,61 @@
         clickModal.style.opacity = '0';
         setTimeout(() => {
           clickModal.style.display = 'none';
-          // Показываем основной контент и контроллер звука
+          // Показываем основной контент и контрол звука
           mainContent.style.display = 'block';
           soundControl.style.display = 'flex';
           // Автоматически запускаем видео со звуком
-          playVideo();
+          playVideo(); // Изменено с playAudio на playVideo
         }, 500);
       });
-
-      // Функция воспроизведения видео
-      function playVideo() {
-        video.muted = false;
+      // Функция воспроизведения видео со звуком
+      function playVideo() { // Изменено с playAudio на playVideo
+        video.muted = false; // Включаем звук
         video.play().then(() => {
-          soundIcon.innerHTML = '<i class="fas fa-volume-up"></i>';
-          soundIcon.classList.remove('muted');
-          isPlaying = true;
-          updateVolumeIcon(video.volume);
+           soundIcon.innerHTML = '<i class="fas fa-volume-up"></i>';
+           soundIcon.classList.remove('muted'); // Убираем класс muted при включенном звуке
+           isPlaying = true;
+           updateVolumeIcon(video.volume); // Обновляем иконку после автозапуска
         }).catch(error => {
           console.log('Ошибка воспроизведения:', error);
-          soundIcon.innerHTML = '<i class="fas fa-exclamation-triangle"></i>';
+          soundIcon.innerHTML = '<i class="fas fa-exclamation-triangle"></i>'; // Иконка ошибки
         });
       }
-
       // Функция переключения звука
       function toggleSound() {
         if (isPlaying) {
-          video.muted = true;
+          video.muted = true; // Выключаем звук у видео
           soundIcon.innerHTML = '<i class="fas fa-volume-mute"></i>';
           soundIcon.classList.add('muted');
           isPlaying = false;
         } else {
-          video.muted = false;
-          video.play().then(() => {
+          video.muted = false; // Включаем звук у видео
+          video.play().then(() => { // Повторный запуск может потребоваться в некоторых браузерах
             soundIcon.innerHTML = '<i class="fas fa-volume-up"></i>';
             soundIcon.classList.remove('muted');
             isPlaying = true;
-            updateVolumeIcon(video.volume);
+            updateVolumeIcon(video.volume); // Обновляем иконку при включении
           }).catch(error => {
             console.log('Ошибка воспроизведения:', error);
-            soundIcon.innerHTML = '<i class="fas fa-exclamation-triangle"></i>';
+            soundIcon.innerHTML = '<i class="fas fa-exclamation-triangle"></i>'; // Иконка ошибки
           });
         }
       }
-
       // Обработчик клика по иконке звука
       soundIcon.addEventListener('click', toggleSound);
-
       // Обработчик изменения громкости
       volumeSlider.addEventListener('input', function() {
         const volume = this.value / 100;
-        video.volume = volume;
+        video.volume = volume; // Устанавливаем громкость видео
+        // Обновляем прогресс бар
+        volumeProgress.style.width = (volume * 100) + '%';
+        // Обновляем иконку в зависимости от громкости
         updateVolumeIcon(volume);
       });
-
       // Функция обновления иконки громкости
       function updateVolumeIcon(volume) {
-        if (volume === 0 || video.muted) {
+        // Проверяем, выключен ли звук принудительно
+        if (video.muted || volume === 0) { // Добавлена проверка video.muted
           soundIcon.innerHTML = '<i class="fas fa-volume-mute"></i>';
         } else if (volume < 0.3) {
           soundIcon.innerHTML = '<i class="fas fa-volume-down"></i>';
@@ -360,9 +355,9 @@
           soundIcon.innerHTML = '<i class="fas fa-volume-high"></i>';
         }
       }
-
       // Установка начальной громкости при загрузке
-      video.volume = 0.3;
+      video.volume = 0.3; // Устанавливаем громкость видео
+      volumeProgress.style.width = '30%';
     });
   </script>
 </body>
