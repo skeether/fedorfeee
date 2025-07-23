@@ -22,6 +22,7 @@
       min-height: 100vh;
       text-align: center;
       padding: 20px;
+      position: relative;
     }
 
     .container {
@@ -31,6 +32,7 @@
       border-radius: 20px;
       box-shadow: 0 0 30px rgba(255, 105, 180, 0.2);
       animation: fadeIn 1.2s ease-in-out;
+      margin-bottom: 30px;
     }
 
     @keyframes fadeIn {
@@ -90,6 +92,77 @@
     audio {
       display: none;
     }
+
+    /* Демо секция */
+    .demo-section {
+      text-align: center;
+      margin-top: 20px;
+      color: #aaa;
+      font-size: 1.1rem;
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0% { opacity: 0.6; }
+      50% { opacity: 1; }
+      100% { opacity: 0.6; }
+    }
+
+    .arrow {
+      display: inline-block;
+      margin: 0 10px;
+      animation: bounce 1s infinite;
+    }
+
+    @keyframes bounce {
+      0%, 20%, 50%, 80%, 100% { transform: translateX(0); }
+      40% { transform: translateX(5px); }
+      60% { transform: translateX(3px); }
+    }
+
+    /* Кнопка звука */
+    .sound-toggle {
+      display: inline-block;
+      padding: 12px 25px;
+      background: #333;
+      color: #fff;
+      border: 2px solid #ff69b4;
+      border-radius: 30px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: 0 0 15px rgba(255, 105, 180, 0.3);
+      margin-top: 10px;
+    }
+
+    .sound-toggle:hover {
+      background: #ff69b4;
+      color: #000;
+      transform: scale(1.05);
+      box-shadow: 0 0 20px rgba(255, 105, 180, 0.6);
+    }
+
+    .sound-toggle:active {
+      transform: scale(0.98);
+    }
+
+    .sound-toggle.muted {
+      background: #ff4444;
+      border-color: #ff4444;
+    }
+
+    .sound-toggle.muted:hover {
+      background: #ff6666;
+    }
+
+    /* Контейнер для демо */
+    .demo-container {
+      background: #1a1a1a;
+      padding: 20px;
+      border-radius: 15px;
+      border: 1px solid #333;
+      box-shadow: 0 0 20px rgba(255, 105, 180, 0.1);
+    }
   </style>
 </head>
 <body>
@@ -109,21 +182,61 @@
     </a>
   </div>
 
+  <!-- Демо секция -->
+  <div class="demo-container">
+    <div class="demo-section">
+      моя демочка <span class="arrow">→</span>
+    </div>
+    
+    <button id="soundToggle" class="sound-toggle">
+      <i class="fas fa-volume-up"></i> Включить звук
+    </button>
+  </div>
+
   <!-- Аудио элемент -->
-  <audio id="background-audio" autoplay>
+  <audio id="background-audio" loop>
     <source src="audio.mp3" type="audio/mpeg">
     Ваш браузер не поддерживает аудио элемент.
   </audio>
 
   <script>
-    // Установка громкости на 30% (можно изменить от 0.0 до 1.0)
     document.addEventListener('DOMContentLoaded', function() {
       const audio = document.getElementById('background-audio');
+      const soundToggle = document.getElementById('soundToggle');
+      let isPlaying = false;
+
+      // Установка начальной громкости
       audio.volume = 0.3;
-      
-      // Попытка воспроизвести аудио (нужно для некоторых браузеров)
-      audio.play().catch(error => {
-        console.log('Автовоспроизведение заблокировано:', error);
+
+      // Функция переключения звука
+      function toggleSound() {
+        if (isPlaying) {
+          audio.pause();
+          soundToggle.innerHTML = '<i class="fas fa-volume-mute"></i> Включить звук';
+          soundToggle.classList.remove('muted');
+          isPlaying = false;
+        } else {
+          audio.play().then(() => {
+            soundToggle.innerHTML = '<i class="fas fa-volume-up"></i> Выключить звук';
+            soundToggle.classList.add('muted');
+            isPlaying = true;
+          }).catch(error => {
+            console.log('Ошибка воспроизведения:', error);
+            soundToggle.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Ошибка';
+          });
+        }
+      }
+
+      // Обработчик клика по кнопке
+      soundToggle.addEventListener('click', toggleSound);
+
+      // Попытка автоматического воспроизведения (может не сработать)
+      audio.play().then(() => {
+        soundToggle.innerHTML = '<i class="fas fa-volume-up"></i> Выключить звук';
+        soundToggle.classList.add('muted');
+        isPlaying = true;
+      }).catch(error => {
+        console.log('Автовоспроизведение заблокировано, используйте кнопку');
       });
     });
   </script>
