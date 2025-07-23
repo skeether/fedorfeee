@@ -22,7 +22,7 @@
       min-height: 100vh;
       text-align: center;
       padding: 20px;
-      position: relative;
+      flex-direction: column;
     }
 
     .container {
@@ -32,7 +32,7 @@
       border-radius: 20px;
       box-shadow: 0 0 30px rgba(255, 105, 180, 0.2);
       animation: fadeIn 1.2s ease-in-out;
-      margin-bottom: 30px;
+      margin-bottom: 20px;
     }
 
     @keyframes fadeIn {
@@ -96,9 +96,9 @@
     /* Демо секция */
     .demo-section {
       text-align: center;
-      margin-top: 20px;
       color: #aaa;
       font-size: 1.1rem;
+      margin-bottom: 15px;
       animation: pulse 2s infinite;
     }
 
@@ -112,6 +112,7 @@
       display: inline-block;
       margin: 0 10px;
       animation: bounce 1s infinite;
+      color: #ff69b4;
     }
 
     @keyframes bounce {
@@ -123,23 +124,23 @@
     /* Кнопка звука */
     .sound-toggle {
       display: inline-block;
-      padding: 12px 25px;
-      background: #333;
-      color: #fff;
-      border: 2px solid #ff69b4;
-      border-radius: 30px;
+      padding: 15px 30px;
+      background: linear-gradient(45deg, #ff69b4, #ff44aa);
+      color: #000;
       font-weight: bold;
+      font-size: 1.1rem;
+      border: none;
+      border-radius: 30px;
       cursor: pointer;
       transition: all 0.3s ease;
-      box-shadow: 0 0 15px rgba(255, 105, 180, 0.3);
+      box-shadow: 0 0 20px rgba(255, 105, 180, 0.6);
       margin-top: 10px;
     }
 
     .sound-toggle:hover {
-      background: #ff69b4;
-      color: #000;
       transform: scale(1.05);
-      box-shadow: 0 0 20px rgba(255, 105, 180, 0.6);
+      box-shadow: 0 0 30px rgba(255, 105, 180, 0.8);
+      background: linear-gradient(45deg, #ff44aa, #ff69b4);
     }
 
     .sound-toggle:active {
@@ -147,21 +148,13 @@
     }
 
     .sound-toggle.muted {
-      background: #ff4444;
-      border-color: #ff4444;
+      background: linear-gradient(45deg, #ff4444, #ff6666);
+      box-shadow: 0 0 20px rgba(255, 68, 68, 0.6);
     }
 
     .sound-toggle.muted:hover {
-      background: #ff6666;
-    }
-
-    /* Контейнер для демо */
-    .demo-container {
-      background: #1a1a1a;
-      padding: 20px;
-      border-radius: 15px;
-      border: 1px solid #333;
-      box-shadow: 0 0 20px rgba(255, 105, 180, 0.1);
+      background: linear-gradient(45deg, #ff6666, #ff4444);
+      box-shadow: 0 0 30px rgba(255, 68, 68, 0.8);
     }
   </style>
 </head>
@@ -182,16 +175,15 @@
     </a>
   </div>
 
-  <!-- Демо секция -->
-  <div class="demo-container">
-    <div class="demo-section">
-      моя демочка <span class="arrow">→</span>
-    </div>
-    
-    <button id="soundToggle" class="sound-toggle">
-      <i class="fas fa-volume-up"></i> Включить звук
-    </button>
+  <!-- Демо секция с надписью и стрелкой -->
+  <div class="demo-section">
+    моя демочка <span class="arrow">→</span>
   </div>
+
+  <!-- Кнопка звука -->
+  <button id="soundToggle" class="sound-toggle">
+    <i class="fas fa-play"></i> Воспроизвести
+  </button>
 
   <!-- Аудио элемент -->
   <audio id="background-audio" loop>
@@ -212,12 +204,12 @@
       function toggleSound() {
         if (isPlaying) {
           audio.pause();
-          soundToggle.innerHTML = '<i class="fas fa-volume-mute"></i> Включить звук';
+          soundToggle.innerHTML = '<i class="fas fa-play"></i> Воспроизвести';
           soundToggle.classList.remove('muted');
           isPlaying = false;
         } else {
           audio.play().then(() => {
-            soundToggle.innerHTML = '<i class="fas fa-volume-up"></i> Выключить звук';
+            soundToggle.innerHTML = '<i class="fas fa-pause"></i> Пауза';
             soundToggle.classList.add('muted');
             isPlaying = true;
           }).catch(error => {
@@ -229,15 +221,6 @@
 
       // Обработчик клика по кнопке
       soundToggle.addEventListener('click', toggleSound);
-
-      // Попытка автоматического воспроизведения (может не сработать)
-      audio.play().then(() => {
-        soundToggle.innerHTML = '<i class="fas fa-volume-up"></i> Выключить звук';
-        soundToggle.classList.add('muted');
-        isPlaying = true;
-      }).catch(error => {
-        console.log('Автовоспроизведение заблокировано, используйте кнопку');
-      });
     });
   </script>
 </body>
