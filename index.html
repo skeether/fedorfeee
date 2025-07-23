@@ -22,7 +22,7 @@
       min-height: 100vh;
       text-align: center;
       padding: 20px;
-      flex-direction: column;
+      position: relative;
     }
 
     .container {
@@ -32,7 +32,6 @@
       border-radius: 20px;
       box-shadow: 0 0 30px rgba(255, 105, 180, 0.2);
       animation: fadeIn 1.2s ease-in-out;
-      margin-bottom: 20px;
     }
 
     @keyframes fadeIn {
@@ -93,72 +92,56 @@
       display: none;
     }
 
-    /* Демо секция */
-    .demo-section {
-      text-align: center;
-      color: #aaa;
-      font-size: 1.1rem;
-      margin-bottom: 15px;
-      animation: pulse 2s infinite;
-    }
-
-    @keyframes pulse {
-      0% { opacity: 0.6; }
-      50% { opacity: 1; }
-      100% { opacity: 0.6; }
-    }
-
-    .arrow {
-      display: inline-block;
-      margin: 0 10px;
-      animation: bounce 1s infinite;
-      color: #ff69b4;
-    }
-
-    @keyframes bounce {
-      0%, 20%, 50%, 80%, 100% { transform: translateX(0); }
-      40% { transform: translateX(5px); }
-      60% { transform: translateX(3px); }
-    }
-
-    /* Кнопка звука */
-    .sound-toggle {
-      display: inline-block;
-      padding: 15px 30px;
-      background: linear-gradient(45deg, #ff69b4, #ff44aa);
-      color: #000;
-      font-weight: bold;
-      font-size: 1.1rem;
-      border: none;
-      border-radius: 30px;
+    /* Иконка звука в левом верхнем углу */
+    .sound-icon {
+      position: fixed;
+      top: 20px;
+      left: 20px;
+      width: 50px;
+      height: 50px;
+      background: #222;
+      border-radius: 50%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
       cursor: pointer;
       transition: all 0.3s ease;
+      box-shadow: 0 0 15px rgba(255, 105, 180, 0.3);
+      z-index: 1000;
+    }
+
+    .sound-icon:hover {
+      transform: scale(1.1);
+      background: #ff69b4;
       box-shadow: 0 0 20px rgba(255, 105, 180, 0.6);
-      margin-top: 10px;
     }
 
-    .sound-toggle:hover {
-      transform: scale(1.05);
-      box-shadow: 0 0 30px rgba(255, 105, 180, 0.8);
-      background: linear-gradient(45deg, #ff44aa, #ff69b4);
+    .sound-icon:active {
+      transform: scale(0.95);
     }
 
-    .sound-toggle:active {
-      transform: scale(0.98);
+    .sound-icon.muted {
+      background: #ff4444;
+      box-shadow: 0 0 15px rgba(255, 68, 68, 0.3);
     }
 
-    .sound-toggle.muted {
-      background: linear-gradient(45deg, #ff4444, #ff6666);
+    .sound-icon.muted:hover {
+      background: #ff6666;
       box-shadow: 0 0 20px rgba(255, 68, 68, 0.6);
     }
 
-    .sound-toggle.muted:hover {
-      background: linear-gradient(45deg, #ff6666, #ff4444);
-      box-shadow: 0 0 30px rgba(255, 68, 68, 0.8);
+    .sound-icon i {
+      font-size: 20px;
+      color: #fff;
     }
   </style>
 </head>
 <body>
+  <!-- Иконка звука в левом верхнем углу -->
+  <div id="soundIcon" class="sound-icon">
+    <i class="fas fa-volume-up"></i>
+  </div>
+
   <div class="container">
     <h1>Fedor</h1>
 
@@ -167,23 +150,13 @@
     </div>
 
     <div class="about">
-      <p>сап двач, я тян ламповая няша, люблю дота реп.</p>
+      <p>cап двач, я тян ламповая няша, люблю дота реп.</p>
     </div>
 
     <a href="https://t.me/blevotron" target="_blank" class="telegram">
       <i class="fab fa-telegram icon"></i> @blevotron
     </a>
   </div>
-
-  <!-- Демо секция с надписью и стрелкой -->
-  <div class="demo-section">
-    моя демочка <span class="arrow">→</span>
-  </div>
-
-  <!-- Кнопка звука -->
-  <button id="soundToggle" class="sound-toggle">
-    <i class="fas fa-play"></i> убейся
-  </button>
 
   <!-- Аудио элемент -->
   <audio id="background-audio" loop>
@@ -194,33 +167,55 @@
   <script>
     document.addEventListener('DOMContentLoaded', function() {
       const audio = document.getElementById('background-audio');
-      const soundToggle = document.getElementById('soundToggle');
+      const soundIcon = document.getElementById('soundIcon');
       let isPlaying = false;
+      let userInteracted = false;
 
       // Установка начальной громкости
       audio.volume = 0.3;
 
       // Функция переключения звука
       function toggleSound() {
+        userInteracted = true;
+        
         if (isPlaying) {
           audio.pause();
-          soundToggle.innerHTML = '<i class="fas fa-play"></i> убейся';
-          soundToggle.classList.remove('muted');
+          soundIcon.innerHTML = '<i class="fas fa-volume-mute"></i>';
+          soundIcon.classList.remove('muted');
           isPlaying = false;
         } else {
           audio.play().then(() => {
-            soundToggle.innerHTML = '<i class="fas fa-pause"></i> Пауза';
-            soundToggle.classList.add('muted');
+            soundIcon.innerHTML = '<i class="fas fa-volume-up"></i>';
+            soundIcon.classList.add('muted');
             isPlaying = true;
           }).catch(error => {
             console.log('Ошибка воспроизведения:', error);
-            soundToggle.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Ошибка';
+            soundIcon.innerHTML = '<i class="fas fa-exclamation-triangle"></i>';
           });
         }
       }
 
-      // Обработчик клика по кнопке
-      soundToggle.addEventListener('click', toggleSound);
+      // Обработчик клика по иконке
+      soundIcon.addEventListener('click', toggleSound);
+
+      // Попытка автоматического воспроизведения
+      function tryAutoPlay() {
+        if (!userInteracted) {
+          audio.play().then(() => {
+            soundIcon.innerHTML = '<i class="fas fa-volume-up"></i>';
+            soundIcon.classList.add('muted');
+            isPlaying = true;
+          }).catch(error => {
+            console.log('Автовоспроизведение заблокировано, кликните по иконке звука');
+          });
+        }
+      }
+
+      // Пробуем воспроизвести сразу
+      tryAutoPlay();
+
+      // Дополнительная попытка через 1 секунду
+      setTimeout(tryAutoPlay, 1000);
     });
   </script>
 </body>
