@@ -85,6 +85,11 @@
     .icon {
       margin-right: 10px;
     }
+
+    /* Стиль для аудио элемента (скрыт) */
+    audio {
+      display: none;
+    }
   </style>
 </head>
 <body>
@@ -96,12 +101,31 @@
     </div>
 
     <div class="about">
-      <p>cап двач, я тян ламповая няша, люблю дота реп.</p>
+      <p>сап двач, я тян ламповая няша, люблю дота реп.</p>
     </div>
 
     <a href="https://t.me/blevotron" target="_blank" class="telegram">
       <i class="fab fa-telegram icon"></i> @blevotron
     </a>
   </div>
+
+  <!-- Аудио элемент -->
+  <audio id="background-audio" autoplay>
+    <source src="audio.mp3" type="audio/mpeg">
+    Ваш браузер не поддерживает аудио элемент.
+  </audio>
+
+  <script>
+    // Установка громкости на 30% (можно изменить от 0.0 до 1.0)
+    document.addEventListener('DOMContentLoaded', function() {
+      const audio = document.getElementById('background-audio');
+      audio.volume = 0.3;
+      
+      // Попытка воспроизвести аудио (нужно для некоторых браузеров)
+      audio.play().catch(error => {
+        console.log('Автовоспроизведение заблокировано:', error);
+      });
+    });
+  </script>
 </body>
 </html>
