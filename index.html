@@ -12,7 +12,6 @@
       box-sizing: border-box;
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     }
-
     body {
       background-color: #000;
       color: #fff;
@@ -25,7 +24,6 @@
       position: relative;
       overflow: hidden;
     }
-
     /* Модальное окно "Click" */
     .click-modal {
       position: fixed;
@@ -41,7 +39,6 @@
       cursor: pointer;
       transition: all 0.5s ease;
     }
-
     .click-text {
       font-size: 4rem;
       font-weight: bold;
@@ -49,20 +46,17 @@
       text-shadow: 0 0 20px rgba(255, 105, 180, 0.8);
       animation: pulse 2s infinite;
     }
-
     @keyframes pulse {
       0% { transform: scale(1); opacity: 0.8; }
       50% { transform: scale(1.1); opacity: 1; }
       100% { transform: scale(1); opacity: 0.8; }
     }
-
     /* Основной контент (скрыт изначально) */
     .main-content {
       display: none;
       width: 100%;
       max-width: 600px;
     }
-
     .container {
       padding: 40px;
       background: #111;
@@ -70,34 +64,28 @@
       box-shadow: 0 0 30px rgba(255, 105, 180, 0.2);
       animation: fadeIn 1.2s ease-in-out;
     }
-
     @keyframes fadeIn {
       from { opacity: 0; transform: translateY(20px); }
       to { opacity: 1; transform: translateY(0); }
     }
-
     h1 {
       font-size: 2.5rem;
       margin-bottom: 10px;
       color: #ff69b4;
     }
-
     .info {
       margin: 20px 0;
       font-size: 1.2rem;
       line-height: 1.6;
     }
-
     .info span {
       color: #aaa;
     }
-
     .about {
       margin: 30px 0;
       font-size: 1.1rem;
       color: #ccc;
     }
-
     .telegram {
       display: inline-block;
       margin-top: 20px;
@@ -110,32 +98,33 @@
       transition: all 0.3s ease;
       box-shadow: 0 0 10px rgba(255, 105, 180, 0.5);
     }
-
     .telegram:hover {
       background: #fff;
       transform: scale(1.05);
     }
-
     .telegram:active {
       transform: scale(0.98);
     }
-
     .icon {
       margin-right: 10px;
     }
-
     /* Стиль для аудио элемента (скрыт) */
     audio {
       display: none;
     }
-
-    /* Контейнер для иконки звука и ползунка */
+    /* Контроллер звука */
     .sound-control {
       position: fixed;
       top: 20px;
       left: 20px;
       display: none;
       z-index: 1000;
+      align-items: center;
+    }
+
+    /* Контейнер для иконки и ползунка */
+    .sound-wrapper {
+      position: relative;
       display: flex;
       align-items: center;
     }
@@ -153,62 +142,60 @@
       transition: all 0.3s ease;
       box-shadow: 0 0 15px rgba(255, 105, 180, 0.3);
       flex-shrink: 0;
+      z-index: 2; /* Чтобы иконка была поверх ползунка */
     }
-
     .sound-icon:hover {
       transform: scale(1.1);
       background: #ff69b4;
       box-shadow: 0 0 20px rgba(255, 105, 180, 0.6);
     }
-
     .sound-icon:active {
       transform: scale(0.95);
     }
-
+    /* Стили для состояния "звук выключен" */
     .sound-icon.muted {
       background: #ff4444;
       box-shadow: 0 0 15px rgba(255, 68, 68, 0.3);
     }
-
     .sound-icon.muted:hover {
       background: #ff6666;
       box-shadow: 0 0 20px rgba(255, 68, 68, 0.6);
     }
-
     .sound-icon i {
       font-size: 20px;
       color: #fff;
     }
 
-    /* Ползунок громкости */
-    .volume-slider {
+    /* Контейнер для ползунка */
+    .volume-container {
+      position: absolute;
+      left: 50px; /* Начинается сразу после иконки */
       width: 0;
+      height: 50px; /* Высота равна высоте иконки */
+      display: flex;
+      align-items: center;
+      overflow: hidden;
+      transition: width 0.3s ease;
+    }
+    .sound-control:hover .volume-container {
+      width: 120px; /* Ширина при раскрытии */
+    }
+
+    /* Стиль для ползунка */
+    .volume-slider {
+      width: 100px;
       height: 5px;
       background: #333;
       border-radius: 3px;
-      overflow: hidden;
-      transition: width 0.3s ease, opacity 0.3s ease;
-      opacity: 0;
-      margin-left: 10px;
-      position: relative;
-    }
-
-    .sound-control:hover .volume-slider {
-      width: 100px;
-      opacity: 1;
-    }
-
-    .volume-slider input {
-      width: 100%;
-      height: 100%;
-      background: transparent;
       outline: none;
-      cursor: pointer;
       -webkit-appearance: none;
       appearance: none;
+      cursor: pointer;
+      margin-left: 10px;
     }
 
-    .volume-slider input::-webkit-slider-thumb {
+    /* Стиль для "бегунка" ползунка */
+    .volume-slider::-webkit-slider-thumb {
       -webkit-appearance: none;
       appearance: none;
       width: 15px;
@@ -219,7 +206,7 @@
       box-shadow: 0 0 5px rgba(255, 105, 180, 0.8);
     }
 
-    .volume-slider input::-moz-range-thumb {
+    .volume-slider::-moz-range-thumb {
       width: 15px;
       height: 15px;
       border-radius: 50%;
@@ -229,17 +216,6 @@
       box-shadow: 0 0 5px rgba(255, 105, 180, 0.8);
     }
 
-    /* Прогресс громкости */
-    .volume-progress {
-      position: absolute;
-      top: 0;
-      left: 0;
-      height: 100%;
-      background: #ff69b4;
-      width: 30%; /* 30% от 100px = 30px */
-      border-radius: 3px;
-      pointer-events: none;
-    }
   </style>
 </head>
 <body>
@@ -248,14 +224,15 @@
     <div class="click-text">Click</div>
   </div>
 
-  <!-- Контрол звука -->
+  <!-- Контроллер звука -->
   <div id="soundControl" class="sound-control">
-    <div id="soundIcon" class="sound-icon">
-      <i class="fas fa-volume-up"></i>
-    </div>
-    <div class="volume-slider">
-      <div class="volume-progress" id="volumeProgress"></div>
-      <input type="range" id="volumeSlider" min="0" max="100" value="30">
+    <div class="sound-wrapper">
+      <div id="soundIcon" class="sound-icon">
+        <i class="fas fa-volume-up"></i>
+      </div>
+      <div class="volume-container">
+        <input type="range" id="volumeSlider" class="volume-slider" min="0" max="100" value="30">
+      </div>
     </div>
   </div>
 
@@ -263,15 +240,12 @@
   <div id="mainContent" class="main-content">
     <div class="container">
       <h1>Fedor</h1>
-
       <div class="info">
         <p><span>Country:</span> Russia</p>
       </div>
-
       <div class="about">
         <p>сап двач, я тян ламповая няша, люблю дота реп.</p>
       </div>
-
       <a href="https://t.me/blevotron" target="_blank" class="telegram">
         <i class="fab fa-telegram icon"></i> @blevotron
       </a>
@@ -291,7 +265,6 @@
       const soundControl = document.getElementById('soundControl');
       const soundIcon = document.getElementById('soundIcon');
       const volumeSlider = document.getElementById('volumeSlider');
-      const volumeProgress = document.getElementById('volumeProgress');
       const audio = document.getElementById('background-audio');
       let isPlaying = false;
 
@@ -301,10 +274,9 @@
         clickModal.style.opacity = '0';
         setTimeout(() => {
           clickModal.style.display = 'none';
-          // Показываем основной контент и контрол звука
+          // Показываем основной контент и контроллер звука
           mainContent.style.display = 'block';
           soundControl.style.display = 'flex';
-          
           // Автоматически запускаем звук
           playAudio();
         }, 500);
@@ -314,10 +286,12 @@
       function playAudio() {
         audio.play().then(() => {
           soundIcon.innerHTML = '<i class="fas fa-volume-up"></i>';
-          soundIcon.classList.add('muted');
+          soundIcon.classList.remove('muted'); // Убираем класс при включенном звуке
           isPlaying = true;
+          updateVolumeIcon(audio.volume); // Обновляем иконку после автозапуска
         }).catch(error => {
           console.log('Ошибка воспроизведения:', error);
+          soundIcon.innerHTML = '<i class="fas fa-exclamation-triangle"></i>';
         });
       }
 
@@ -326,13 +300,14 @@
         if (isPlaying) {
           audio.pause();
           soundIcon.innerHTML = '<i class="fas fa-volume-mute"></i>';
-          soundIcon.classList.remove('muted');
+          soundIcon.classList.add('muted');
           isPlaying = false;
         } else {
           audio.play().then(() => {
             soundIcon.innerHTML = '<i class="fas fa-volume-up"></i>';
-            soundIcon.classList.add('muted');
+            soundIcon.classList.remove('muted');
             isPlaying = true;
+            updateVolumeIcon(audio.volume); // Обновляем иконку при включении
           }).catch(error => {
             console.log('Ошибка воспроизведения:', error);
             soundIcon.innerHTML = '<i class="fas fa-exclamation-triangle"></i>';
@@ -347,11 +322,6 @@
       volumeSlider.addEventListener('input', function() {
         const volume = this.value / 100;
         audio.volume = volume;
-        
-        // Обновляем прогресс бар
-        volumeProgress.style.width = (volume * 100) + '%';
-        
-        // Обновляем иконку в зависимости от громкости
         updateVolumeIcon(volume);
       });
 
@@ -370,7 +340,6 @@
 
       // Установка начальной громкости при загрузке
       audio.volume = 0.3;
-      volumeProgress.style.width = '30%';
     });
   </script>
 </body>
