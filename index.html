@@ -129,11 +129,17 @@
       display: none;
     }
 
-    /* Иконка звука в левом верхнем углу */
-    .sound-icon {
+    /* Контейнер для иконки звука и ползунка */
+    .sound-control {
       position: fixed;
       top: 20px;
       left: 20px;
+      display: none;
+      z-index: 1000;
+    }
+
+    /* Иконка звука */
+    .sound-icon {
       width: 50px;
       height: 50px;
       background: #222;
@@ -144,8 +150,6 @@
       cursor: pointer;
       transition: all 0.3s ease;
       box-shadow: 0 0 15px rgba(255, 105, 180, 0.3);
-      z-index: 1000;
-      display: none; /* Скрываем до появления основного контента */
     }
 
     .sound-icon:hover {
@@ -172,6 +176,56 @@
       font-size: 20px;
       color: #fff;
     }
+
+    /* Ползунок громкости */
+    .volume-slider {
+      position: absolute;
+      left: 60px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 0;
+      height: 5px;
+      background: #333;
+      border-radius: 3px;
+      overflow: hidden;
+      transition: width 0.3s ease;
+      opacity: 0;
+      box-shadow: 0 0 10px rgba(255, 105, 180, 0.3);
+    }
+
+    .sound-control:hover .volume-slider {
+      width: 100px;
+      opacity: 1;
+    }
+
+    .volume-slider input {
+      width: 100%;
+      height: 100%;
+      background: transparent;
+      outline: none;
+      cursor: pointer;
+      -webkit-appearance: none;
+    }
+
+    .volume-slider input::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 15px;
+      height: 15px;
+      border-radius: 50%;
+      background: #ff69b4;
+      cursor: pointer;
+      box-shadow: 0 0 5px rgba(255, 105, 180, 0.8);
+    }
+
+    .volume-slider input::-moz-range-thumb {
+      width: 15px;
+      height: 15px;
+      border-radius: 50%;
+      background: #ff69b4;
+      cursor: pointer;
+      border: none;
+      box-shadow: 0 0 5px rgba(255, 105, 180, 0.8);
+    }
   </style>
 </head>
 <body>
@@ -180,9 +234,14 @@
     <div class="click-text">Click</div>
   </div>
 
-  <!-- Иконка звука (появляется позже) -->
-  <div id="soundIcon" class="sound-icon">
-    <i class="fas fa-volume-up"></i>
+  <!-- Контрол звука -->
+  <div id="soundControl" class="sound-control">
+    <div id="soundIcon" class="sound-icon">
+      <i class="fas fa-volume-up"></i>
+    </div>
+    <div class="volume-slider">
+      <input type="range" id="volumeSlider" min="0" max="100" value="30">
+    </div>
   </div>
 
   <!-- Основной контент -->
@@ -214,12 +273,11 @@
     document.addEventListener('DOMContentLoaded', function() {
       const clickModal = document.getElementById('clickModal');
       const mainContent = document.getElementById('mainContent');
+      const soundControl = document.getElementById('soundControl');
       const soundIcon = document.getElementById('soundIcon');
+      const volumeSlider = document.getElementById('volumeSlider');
       const audio = document.getElementById('background-audio');
       let isPlaying = false;
-
-      // Установка начальной громкости
-      audio.volume = 0.3;
 
       // Обработчик клика по модальному окну
       clickModal.addEventListener('click', function() {
@@ -227,9 +285,9 @@
         clickModal.style.opacity = '0';
         setTimeout(() => {
           clickModal.style.display = 'none';
-          // Показываем основной контент
+          // Показываем основной контент и контрол звука
           mainContent.style.display = 'block';
-          soundIcon.style.display = 'flex';
+          soundControl.style.display = 'block';
           
           // Автоматически запускаем звук
           playAudio();
@@ -268,6 +326,26 @@
 
       // Обработчик клика по иконке звука
       soundIcon.addEventListener('click', toggleSound);
+
+      // Обработчик изменения громкости
+      volumeSlider.addEventListener('input', function() {
+        const volume = this.value / 100;
+        audio.volume = volume;
+        
+        // Обновляем иконку в зависимости от громкости
+        if (volume === 0) {
+          soundIcon.innerHTML = '<i class="fas fa-volume-mute"></i>';
+        } else if (volume < 0.3) {
+          soundIcon.innerHTML = '<i class="fas fa-volume-down"></i>';
+        } else if (volume < 0.7) {
+          soundIcon.innerHTML = '<i class="fas fa-volume-up"></i>';
+        } else {
+          soundIcon.innerHTML = '<i class="fas fa-volume-high"></i>';
+        }
+      });
+
+      // Установка начальной громкости при загрузке
+      audio.volume = 0.3;
     });
   </script>
 </body>
