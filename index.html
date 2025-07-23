@@ -136,6 +136,8 @@
       left: 20px;
       display: none;
       z-index: 1000;
+      display: flex;
+      align-items: center;
     }
 
     /* Иконка звука */
@@ -150,6 +152,7 @@
       cursor: pointer;
       transition: all 0.3s ease;
       box-shadow: 0 0 15px rgba(255, 105, 180, 0.3);
+      flex-shrink: 0;
     }
 
     .sound-icon:hover {
@@ -179,18 +182,15 @@
 
     /* Ползунок громкости */
     .volume-slider {
-      position: absolute;
-      left: 60px;
-      top: 50%;
-      transform: translateY(-50%);
       width: 0;
       height: 5px;
       background: #333;
       border-radius: 3px;
       overflow: hidden;
-      transition: width 0.3s ease;
+      transition: width 0.3s ease, opacity 0.3s ease;
       opacity: 0;
-      box-shadow: 0 0 10px rgba(255, 105, 180, 0.3);
+      margin-left: 10px;
+      position: relative;
     }
 
     .sound-control:hover .volume-slider {
@@ -205,10 +205,12 @@
       outline: none;
       cursor: pointer;
       -webkit-appearance: none;
+      appearance: none;
     }
 
     .volume-slider input::-webkit-slider-thumb {
       -webkit-appearance: none;
+      appearance: none;
       width: 15px;
       height: 15px;
       border-radius: 50%;
@@ -226,6 +228,18 @@
       border: none;
       box-shadow: 0 0 5px rgba(255, 105, 180, 0.8);
     }
+
+    /* Прогресс громкости */
+    .volume-progress {
+      position: absolute;
+      top: 0;
+      left: 0;
+      height: 100%;
+      background: #ff69b4;
+      width: 30%; /* 30% от 100px = 30px */
+      border-radius: 3px;
+      pointer-events: none;
+    }
   </style>
 </head>
 <body>
@@ -240,6 +254,7 @@
       <i class="fas fa-volume-up"></i>
     </div>
     <div class="volume-slider">
+      <div class="volume-progress" id="volumeProgress"></div>
       <input type="range" id="volumeSlider" min="0" max="100" value="30">
     </div>
   </div>
@@ -276,6 +291,7 @@
       const soundControl = document.getElementById('soundControl');
       const soundIcon = document.getElementById('soundIcon');
       const volumeSlider = document.getElementById('volumeSlider');
+      const volumeProgress = document.getElementById('volumeProgress');
       const audio = document.getElementById('background-audio');
       let isPlaying = false;
 
@@ -287,7 +303,7 @@
           clickModal.style.display = 'none';
           // Показываем основной контент и контрол звука
           mainContent.style.display = 'block';
-          soundControl.style.display = 'block';
+          soundControl.style.display = 'flex';
           
           // Автоматически запускаем звук
           playAudio();
@@ -332,7 +348,15 @@
         const volume = this.value / 100;
         audio.volume = volume;
         
+        // Обновляем прогресс бар
+        volumeProgress.style.width = (volume * 100) + '%';
+        
         // Обновляем иконку в зависимости от громкости
+        updateVolumeIcon(volume);
+      });
+
+      // Функция обновления иконки громкости
+      function updateVolumeIcon(volume) {
         if (volume === 0) {
           soundIcon.innerHTML = '<i class="fas fa-volume-mute"></i>';
         } else if (volume < 0.3) {
@@ -342,10 +366,11 @@
         } else {
           soundIcon.innerHTML = '<i class="fas fa-volume-high"></i>';
         }
-      });
+      }
 
       // Установка начальной громкости при загрузке
       audio.volume = 0.3;
+      volumeProgress.style.width = '30%';
     });
   </script>
 </body>
