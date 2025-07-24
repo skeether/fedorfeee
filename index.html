@@ -106,28 +106,30 @@
       font-size: 1.1rem;
       color: #ccc;
     }
-    .telegram {
-      display: inline-block;
-      margin-top: 20px;
-      padding: 12px 25px;
+    /* Общий класс для кнопок соцсетей */
+    .social-link {
+      display: inline-flex; /* Используем flex для центрирования иконки */
+      justify-content: center;
+      align-items: center;
+      width: 50px; /* Фиксированная ширина */
+      height: 50px; /* Фиксированная высота */
+      margin: 10px; /* Отступы между кнопками */
       background: #ff69b4;
       color: #000;
-      font-weight: bold;
-      border-radius: 30px;
+      font-size: 1.5rem; /* Размер иконки */
+      border-radius: 50%; /* Круглая форма */
       text-decoration: none;
       transition: all 0.3s ease;
       box-shadow: 0 0 10px rgba(255, 105, 180, 0.5);
     }
-    .telegram:hover {
+    .social-link:hover {
       background: #fff;
-      transform: scale(1.05);
+      transform: scale(1.1); /* Увеличение при наведении */
     }
-    .telegram:active {
-      transform: scale(0.98);
+    .social-link:active {
+      transform: scale(0.95); /* Уменьшение при клике */
     }
-    .icon {
-      margin-right: 10px;
-    }
+
     /* Контроллер звука */
     .sound-control {
       position: fixed;
@@ -229,7 +231,7 @@
 </head>
 <body>
   <!-- Видео на фоне -->
-  <video id="background-video" autoplay muted loop> <!-- autoplay здесь больше не начнет воспроизведение со звуком, но оставлено для потенциальной совместимости -->
+  <video id="background-video" autoplay muted loop>
     <source src="video.mp4" type="video/mp4">
     Ваш браузер не поддерживает видео.
   </video>
@@ -258,9 +260,17 @@
       <div class="about">
         <p>сап двач, я тян ламповая няша, люблю дота реп.</p>
       </div>
-      <a href="https://t.me/blevotron" target="_blank" class="telegram">
-        <i class="fab fa-telegram icon"></i> @blevotron
-      </a>
+      <div class="social-links">
+        <a href="https://t.me/blevotron" target="_blank" class="social-link">
+          <i class="fab fa-telegram"></i>
+        </a>
+        <a href="https://steamcommunity.com/profiles/76561199441672674" target="_blank" class="social-link">
+          <i class="fab fa-steam"></i>
+        </a>
+        <a href="https://www.roblox.com/users/7216612657/profile" target="_blank" class="social-link">
+          <i class="fab fa-google-play"></i> <!-- Используем существующую иконку, так как Roblox нет в Font Awesome 6.5.0 -->
+        </a>
+      </div>
     </div>
   </div>
   <script>
@@ -273,12 +283,20 @@
       const video = document.getElementById('background-video');
       let isPlaying = false;
 
-      // Убираем автоматическое воспроизведение со звуком при загрузке
-      // Видео остается в состоянии 'muted' до клика
+      // Проверяем localStorage при загрузке страницы
+      const videoPlayed = localStorage.getItem('videoPlayed');
 
       // Обработчик события canplaythrough для видео
       video.addEventListener('canplaythrough', function() {
         document.body.classList.add('video-loaded');
+        // Если видео уже было воспроизведено (по localStorage), пытаемся запустить его немедленно
+        if (videoPlayed === 'true') {
+            // Показываем основной контент и контроллер звука
+            clickModal.style.display = 'none'; // Скрываем модальное окно
+            mainContent.style.display = 'block';
+            soundControl.style.display = 'flex';
+            playVideoUnmuted(); // Пытаемся воспроизвести с включенным звуком
+        }
       });
 
       // Обработчик клика по модальному окну
@@ -292,6 +310,8 @@
           soundControl.style.display = 'flex';
           // Запускаем видео со звуком ТОЛЬКО после клика
           playVideoUnmuted();
+          // Сохраняем состояние в localStorage
+          localStorage.setItem('videoPlayed', 'true');
         }, 500);
       });
 
